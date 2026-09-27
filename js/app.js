@@ -1,8 +1,15 @@
-import { parseCsv, toCsv } from './csv.js';
-import { convert } from './convert.js';
-import { buildXlsx } from './xlsx.js';
+// On each release bump ?v= here and in index.html so browsers fetch fresh files.
+import { parseCsv, toCsv } from './csv.js?v=4';
+import { convert } from './convert.js?v=4';
+import { buildXlsx } from './xlsx.js?v=4';
 
 const PREVIEW_ROWS = 15;
+
+// Every element this script touches; see the stale-page check below.
+const REQUIRED_IDS = [
+  'file', 'dropzone', 'venue', 'filename', 'error', 'result', 'stat-total', 'stat-true', 'stat-false',
+  'excluded-note', 'sheet-names', 'preview', 'preview-note', 'dl-xlsx', 'dl-csv',
+];
 
 const $ = (id) => document.getElementById(id);
 const fileInput = $('file');
@@ -112,6 +119,12 @@ $('dl-xlsx').addEventListener('click', () => {
   ]);
   download(blob, `${source.baseName}.xlsx`);
 });
+
+// A cached old index.html can pair with this newer script right after a deploy.
+if (REQUIRED_IDS.some((id) => !$(id))) {
+  showError('This page was just updated. Please refresh it (Ctrl/Cmd + Shift + R) and try again.');
+  throw new Error('Stale page markup; reload required.');
+}
 
 fileInput.addEventListener('change', () => loadFile(fileInput.files[0]));
 venueInput.addEventListener('input', render);
