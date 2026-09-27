@@ -1,0 +1,10 @@
+{
+  "name": "csv-converter",
+  "private": true,
+  "type": "module",
+  "description": "Static site that converts a Luma guest export into a 6-column check-in sheet.",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "start": "npx --yes serve -l 8080 ."
+  }
+}
