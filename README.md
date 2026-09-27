@@ -13,9 +13,11 @@ Everything runs in the browser, so the guest list is never uploaded anywhere.
 
    - `checked_in` — `TRUE` if Luma's `checked_in_at` has a date, otherwise `FALSE`.
    - `ticket_venue` — new column, filled with `In-person` (editable on the page).
-3. Rows are sorted: checked-in guests first (earliest check-in first), then
+3. Guests whose `approval_status` is `invited` are removed from the copy and
+   not counted in the totals (they stay in the original sheet).
+4. Rows are sorted: checked-in guests first (earliest check-in first), then
    the rest (newest registration first).
-4. Download:
+5. Download:
    - **Excel (.xlsx)** with two sheets: the original data untouched, and
      `Copy of <file name>` with the 6 columns. Excel caps sheet names at 31
      characters, so long names are shortened inside the file.

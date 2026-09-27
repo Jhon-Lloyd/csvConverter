@@ -11,6 +11,8 @@ const LUMA = [
   'g-2,"Sample, Bob","Sample,",Bob,bob@example.com,,2026-04-02T08:00:00.000Z,approved,2026-05-16T01:10:00.000Z,Standard',
   'g-3,,,,anon@example.com,,2026-05-10T08:00:00.000Z,approved,2026-05-16T00:30:00.000Z,Standard',
   'g-4,Dana Test,Dana,Test,dana@example.com,,2026-05-14T08:00:00.000Z,approved,,Standard',
+  'g-6,Ivy Invited,Ivy,Invited,ivy@example.com,,2026-05-01T08:00:00.000Z,invited,,Standard',
+  'g-7,Ian Invited,Ian,Invited,ian@example.com,,2026-05-02T08:00:00.000Z,Invited,2026-05-16T00:40:00.000Z,Standard',
   'g-5,Iñigo Demo,Iñigo,Demo,inigo@example.com,,2026-04-20T08:00:00.000Z,approved,2026-05-16T00:45:00.000Z,Standard',
 ].join('\n');
 
@@ -32,7 +34,7 @@ test('sorts checked-in first by check-in time, then others newest registration f
       ['alice@example.com', false],
     ]
   );
-  assert.deepEqual(stats, { total: 5, checkedIn: 3, notCheckedIn: 2 });
+  assert.deepEqual(stats, { total: 5, checkedIn: 3, notCheckedIn: 2, invited: 2 });
 });
 
 test('custom venue and quoted fields survive a CSV round trip', () => {
@@ -48,6 +50,11 @@ test('header matching is case/space insensitive and reports missing columns', ()
   const ok = convert(parseCsv('First Name,Last Name,Email,Created At,Checked In At\na,b,c,2026-01-01,\n'));
   assert.equal(ok.rows[0][4], false);
   assert.throws(() => convert(parseCsv('name,email\na,b')), /Missing columns: first_name, last_name, created_at, checked_in_at/);
+});
+
+test('files without approval_status keep every row', () => {
+  const { stats } = convert(parseCsv('first_name,last_name,email,created_at,checked_in_at\na,b,c,2026-01-01,\n'));
+  assert.deepEqual(stats, { total: 1, checkedIn: 0, notCheckedIn: 1, invited: 0 });
 });
 
 test('isCheckedIn', () => {

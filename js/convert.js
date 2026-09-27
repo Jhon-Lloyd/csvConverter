@@ -11,6 +11,9 @@ const SOURCE_COLUMNS = {
   checked_in: ['checked_in_at', 'checked_in', 'check_in_time', 'checkin_at'],
 };
 
+// Guests with these approval_status values are left out of the copy.
+const EXCLUDED_STATUSES = ['invited'];
+
 const normalize = (h) => h.trim().toLowerCase().replace(/[\s-]+/g, '_');
 
 export function findColumns(header) {
@@ -22,6 +25,9 @@ export function findColumns(header) {
     if (idx === -1) missing.push(key === 'checked_in' ? 'checked_in_at' : key);
     else indexes[key] = idx;
   }
+  // Optional: files without approval_status keep every row.
+  const status = normalized.indexOf('approval_status');
+  if (status !== -1) indexes.approval_status = status;
   return { indexes, missing };
 }
 
@@ -40,6 +46,7 @@ const time = (s) => {
 /**
  * rows: parsed CSV including the header row.
  * Returns { header, rows: [[...6 cols with checked_in as boolean]], stats }.
+ * Rows whose approval_status is "invited" are dropped.
  * Order: checked in first (earliest check-in first), then not checked in
  * (newest registration first). Ties keep the original file order.
  */
@@ -51,7 +58,11 @@ export function convert(rows, { venue = 'In-person' } = {}) {
     throw new Error(`Missing column${missing.length > 1 ? 's' : ''}: ${missing.join(', ')}. Is this a Luma guest export?`);
   }
 
-  const records = data.map((r, order) => {
+  const isExcluded = (r) =>
+    'approval_status' in indexes && EXCLUDED_STATUSES.includes((r[indexes.approval_status] ?? '').trim().toLowerCase());
+  const kept = data.filter((r) => !isExcluded(r));
+
+  const records = kept.map((r, order) => {
     const get = (k) => (r[indexes[k]] ?? '').trim();
     const rawCheckIn = get('checked_in');
     const checked = isCheckedIn(rawCheckIn);
@@ -76,6 +87,6 @@ export function convert(rows, { venue = 'In-person' } = {}) {
   return {
     header: OUTPUT_HEADERS,
     rows: records.map((r) => r.out),
-    stats: { total: records.length, checkedIn, notCheckedIn: records.length - checkedIn },
+    stats: { total: records.length, checkedIn, notCheckedIn: records.length - checkedIn, invited: data.length - kept.length },
   };
 }
