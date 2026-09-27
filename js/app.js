@@ -1,14 +1,14 @@
 // On each release bump ?v= here and in index.html so browsers fetch fresh files.
-import { parseCsv, toCsv } from './csv.js?v=4';
-import { convert } from './convert.js?v=4';
-import { buildXlsx } from './xlsx.js?v=4';
+import { parseCsv, toCsv } from './csv.js?v=5';
+import { convert } from './convert.js?v=5';
+import { buildXlsx } from './xlsx.js?v=5';
 
 const PREVIEW_ROWS = 15;
 
 // Every element this script touches; see the stale-page check below.
 const REQUIRED_IDS = [
   'file', 'dropzone', 'venue', 'filename', 'error', 'result', 'stat-total', 'stat-true', 'stat-false',
-  'excluded-note', 'sheet-names', 'preview', 'preview-note', 'dl-xlsx', 'dl-csv',
+  'excluded-note', 'sheet-names', 'preview', 'preview-note', 'dl-xlsx', 'dl-csv', 'dl-csv-both',
 ];
 
 const $ = (id) => document.getElementById(id);
@@ -104,11 +104,22 @@ function download(blob, name) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+function downloadCsv(rows, name) {
+  const csv = toCsv(rows.map((r) => r.map((v) => (typeof v === 'boolean' ? (v ? 'TRUE' : 'FALSE') : v))));
+  // BOM so Excel reads accented names (ñ, é…) correctly.
+  download(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }), name);
+}
+
 $('dl-csv').addEventListener('click', () => {
   if (!result) return;
-  const csv = toCsv(copyRows().map((r) => r.map((v) => (typeof v === 'boolean' ? (v ? 'TRUE' : 'FALSE') : v))));
-  // BOM so Excel reads accented names (ñ, é…) correctly.
-  download(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }), `Copy of ${source.baseName}.csv`);
+  downloadCsv(copyRows(), `Copy of ${source.baseName}.csv`);
+});
+
+$('dl-csv-both').addEventListener('click', () => {
+  if (!result) return;
+  downloadCsv(source.rows, `${source.baseName}.csv`);
+  // Browsers may drop a second download fired in the same tick.
+  setTimeout(() => downloadCsv(copyRows(), `Copy of ${source.baseName}.csv`), 300);
 });
 
 $('dl-xlsx').addEventListener('click', () => {

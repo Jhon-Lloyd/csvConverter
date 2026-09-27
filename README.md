@@ -21,7 +21,9 @@ Everything runs in the browser, so the guest list is never uploaded anywhere.
    - **Excel (.xlsx)** with two sheets: the original data untouched, and
      `Copy of <file name>` with the 6 columns. Excel caps sheet names at 31
      characters, so long names are shortened inside the file.
-   - **CSV** containing only the 6-column copy, named `Copy of <file name>.csv`.
+   - **CSV · copy only**: the 6-column copy, named `Copy of <file name>.csv`.
+   - **CSV · both sheets**: two files, `<file name>.csv` (original) and
+     `Copy of <file name>.csv`. The browser may ask once to allow multiple downloads.
 
 ## Publish with GitHub Pages
 
