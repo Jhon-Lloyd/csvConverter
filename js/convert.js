@@ -12,7 +12,8 @@ const SOURCE_COLUMNS = {
 };
 
 // Guests with these approval_status values are left out of the copy.
-const EXCLUDED_STATUSES = ['invited'];
+// Compared after normalize(), so "Pending approval" matches too.
+const EXCLUDED_STATUSES = ['invited', 'pending_approval'];
 
 const normalize = (h) => h.trim().toLowerCase().replace(/[\s-]+/g, '_');
 
@@ -46,7 +47,7 @@ const time = (s) => {
 /**
  * rows: parsed CSV including the header row.
  * Returns { header, rows: [[...6 cols with checked_in as boolean]], stats }.
- * Rows whose approval_status is "invited" are dropped.
+ * Rows whose approval_status is "invited" or "pending_approval" are dropped.
  * Order: checked in first (earliest check-in first), then not checked in
  * (newest registration first). Ties keep the original file order.
  */
@@ -58,9 +59,15 @@ export function convert(rows, { venue = 'In-person' } = {}) {
     throw new Error(`Missing column${missing.length > 1 ? 's' : ''}: ${missing.join(', ')}. Is this a Luma guest export?`);
   }
 
-  const isExcluded = (r) =>
-    'approval_status' in indexes && EXCLUDED_STATUSES.includes((r[indexes.approval_status] ?? '').trim().toLowerCase());
-  const kept = data.filter((r) => !isExcluded(r));
+  // Count of dropped rows per status, e.g. { invited: 2, pending_approval: 1 }.
+  const excluded = {};
+  const kept = data.filter((r) => {
+    if (!('approval_status' in indexes)) return true;
+    const status = normalize(r[indexes.approval_status] ?? '');
+    if (!EXCLUDED_STATUSES.includes(status)) return true;
+    excluded[status] = (excluded[status] ?? 0) + 1;
+    return false;
+  });
 
   const records = kept.map((r, order) => {
     const get = (k) => (r[indexes[k]] ?? '').trim();
@@ -87,6 +94,6 @@ export function convert(rows, { venue = 'In-person' } = {}) {
   return {
     header: OUTPUT_HEADERS,
     rows: records.map((r) => r.out),
-    stats: { total: records.length, checkedIn, notCheckedIn: records.length - checkedIn, invited: data.length - kept.length },
+    stats: { total: records.length, checkedIn, notCheckedIn: records.length - checkedIn, excluded },
   };
 }

@@ -48,9 +48,11 @@ function render() {
   $('stat-total').textContent = result.stats.total;
   $('stat-true').textContent = result.stats.checkedIn;
   $('stat-false').textContent = result.stats.notCheckedIn;
-  const { invited } = result.stats;
-  $('invited-note').hidden = !invited;
-  $('invited-note').textContent = `${invited} guest${invited === 1 ? '' : 's'} with approval_status “invited” removed from the copy (still in the original sheet).`;
+  const excluded = Object.entries(result.stats.excluded);
+  $('excluded-note').hidden = !excluded.length;
+  $('excluded-note').textContent =
+    `Removed from the copy: ${excluded.map(([status, n]) => `${n} ${status.replace(/_/g, ' ')}`).join(', ')} ` +
+    '(still in the original sheet).';
   $('sheet-names').textContent =
     `Sheets: “${source.baseName}” (original) and “Copy of ${source.baseName}”. ` +
     'Excel limits sheet names to 31 characters, so long names are shortened inside the .xlsx.';

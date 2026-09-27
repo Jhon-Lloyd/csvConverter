@@ -13,7 +13,7 @@ Everything runs in the browser, so the guest list is never uploaded anywhere.
 
    - `checked_in` — `TRUE` if Luma's `checked_in_at` has a date, otherwise `FALSE`.
    - `ticket_venue` — new column, filled with `In-person` (editable on the page).
-3. Guests whose `approval_status` is `invited` are removed from the copy and
+3. Guests whose `approval_status` is `invited` or `pending_approval` are removed from the copy and
    not counted in the totals (they stay in the original sheet).
 4. Rows are sorted: checked-in guests first (earliest check-in first), then
    the rest (newest registration first).
