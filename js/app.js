@@ -1,13 +1,13 @@
 // On each release bump ?v= here and in index.html so browsers fetch fresh files.
-import { parseCsv, toCsv } from './csv.js?v=5';
-import { convert } from './convert.js?v=5';
-import { buildXlsx } from './xlsx.js?v=5';
+import { parseCsv, toCsv } from './csv.js?v=7';
+import { convert } from './convert.js?v=7';
+import { buildXlsx } from './xlsx.js?v=7';
 
 const PREVIEW_ROWS = 15;
 
 // Every element this script touches; see the stale-page check below.
 const REQUIRED_IDS = [
-  'file', 'dropzone', 'venue', 'filename', 'error', 'result', 'stat-total', 'stat-true', 'stat-false',
+  'file', 'dropzone', 'venue', 'venue-on', 'venue-name', 'filename', 'error', 'result', 'stat-total', 'stat-true', 'stat-false',
   'excluded-note', 'sheet-names', 'preview', 'preview-note', 'dl-xlsx', 'dl-csv', 'dl-csv-both',
 ];
 
@@ -15,6 +15,8 @@ const $ = (id) => document.getElementById(id);
 const fileInput = $('file');
 const dropzone = $('dropzone');
 const venueInput = $('venue');
+const venueToggle = $('venue-on');
+const venueName = $('venue-name');
 
 let source = null; // { baseName, rows }
 let result = null;
@@ -43,7 +45,8 @@ async function loadFile(file) {
 function render() {
   if (!source) return;
   try {
-    result = convert(source.rows, { venue: venueInput.value.trim() });
+    const ticketColumn = venueToggle.checked ? { name: venueName.value, value: venueInput.value.trim() } : null;
+    result = convert(source.rows, { ticketColumn });
   } catch (err) {
     result = null;
     showError(err.message);
@@ -139,6 +142,11 @@ if (REQUIRED_IDS.some((id) => !$(id))) {
 
 fileInput.addEventListener('change', () => loadFile(fileInput.files[0]));
 venueInput.addEventListener('input', render);
+venueToggle.addEventListener('change', () => {
+  venueInput.disabled = venueName.disabled = !venueToggle.checked;
+  render();
+});
+venueName.addEventListener('change', render);
 
 for (const evt of ['dragenter', 'dragover']) {
   dropzone.addEventListener(evt, (e) => {

@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Guest List Converter</title>
-  <meta name="description" content="Convert a Luma guest export into a 6-column check-in sheet. Runs entirely in your browser.">
+  <meta name="description" content="Convert a Luma guest export into a check-in sheet. Runs entirely in your browser.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=5">
+  <link rel="stylesheet" href="css/style.css?v=7">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='13' height='13' rx='3' fill='%234285F4'/%3E%3Crect x='17' y='2' width='13' height='13' rx='3' fill='%23EA4335'/%3E%3Crect x='2' y='17' width='13' height='13' rx='3' fill='%23FBBC04'/%3E%3Crect x='17' y='17' width='13' height='13' rx='3' fill='%2334A853'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -17,7 +17,7 @@
   <main class="container">
     <header class="hero">
       <h1>Guest List Converter</h1>
-      <p class="lead">Drop in a Luma guest export. You get the original sheet plus a <strong>“Copy of …”</strong> sheet with just the 6 check-in columns.</p>
+      <p class="lead">Drop in a Luma guest export. You get the original sheet plus a <strong>“Copy of …”</strong> sheet with just the check-in columns.</p>
     </header>
 
     <section class="card" aria-labelledby="step1">
@@ -29,9 +29,22 @@
         <span class="dz-sub">or <u>browse files</u></span>
         <span id="filename" class="dz-file" hidden></span>
       </label>
-      <div class="field">
-        <label for="venue">ticket_venue value</label>
-        <input id="venue" type="text" value="In-person" autocomplete="off">
+      <label class="check">
+        <input id="venue-on" type="checkbox" checked>
+        Add ticket column
+      </label>
+      <div class="fields">
+        <div class="field">
+          <label for="venue-name">Column name</label>
+          <select id="venue-name">
+            <option value="ticket_venue">ticket_venue</option>
+            <option value="ticket_type">ticket_type</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="venue">Value</label>
+          <input id="venue" type="text" value="In-person" autocomplete="off">
+        </div>
       </div>
       <p id="error" class="error" role="alert" hidden></p>
     </section>
@@ -71,6 +84,6 @@
     <footer class="footer">Your file never leaves this browser — everything runs locally.</footer>
   </main>
 
-  <script type="module" src="js/app.js?v=5"></script>
+  <script type="module" src="js/app.js?v=7"></script>
 </body>
 </html>

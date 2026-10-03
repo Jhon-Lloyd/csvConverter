@@ -1,6 +1,6 @@
-// Turns a Luma guest export into the 6-column check-in sheet.
+// Turns a Luma guest export into the check-in sheet.
 
-export const OUTPUT_HEADERS = ['first_name', 'last_name', 'email', 'created_at', 'checked_in', 'ticket_venue'];
+export const OUTPUT_HEADERS = ['first_name', 'last_name', 'email', 'created_at', 'checked_in'];
 
 // Output column -> accepted header names in the source file (normalized).
 const SOURCE_COLUMNS = {
@@ -46,12 +46,14 @@ const time = (s) => {
 
 /**
  * rows: parsed CSV including the header row.
- * Returns { header, rows: [[...6 cols with checked_in as boolean]], stats }.
+ * Returns { header, rows: [[...cols with checked_in as boolean]], stats }.
+ * ticketColumn: { name, value } adds a last column with that header and
+ * value on every row (e.g. ticket_venue = In-person); null leaves it out.
  * Rows whose approval_status is "invited" or "pending_approval" are dropped.
  * Order: checked in first (earliest check-in first), then not checked in
  * (newest registration first). Ties keep the original file order.
  */
-export function convert(rows, { venue = 'In-person' } = {}) {
+export function convert(rows, { ticketColumn = { name: 'ticket_venue', value: 'In-person' } } = {}) {
   if (!rows.length) throw new Error('The file is empty.');
   const [header, ...data] = rows;
   const { indexes, missing } = findColumns(header);
@@ -78,7 +80,7 @@ export function convert(rows, { venue = 'In-person' } = {}) {
       checked,
       checkInTime: checked ? time(rawCheckIn) : null,
       createdTime: time(get('created_at')),
-      out: [get('first_name'), get('last_name'), get('email'), get('created_at'), checked, venue],
+      out: [get('first_name'), get('last_name'), get('email'), get('created_at'), checked, ...(ticketColumn ? [ticketColumn.value] : [])],
     };
   });
 
@@ -92,7 +94,7 @@ export function convert(rows, { venue = 'In-person' } = {}) {
 
   const checkedIn = records.filter((r) => r.checked).length;
   return {
-    header: OUTPUT_HEADERS,
+    header: ticketColumn ? [...OUTPUT_HEADERS, ticketColumn.name] : OUTPUT_HEADERS,
     rows: records.map((r) => r.out),
     stats: { total: records.length, checkedIn, notCheckedIn: records.length - checkedIn, excluded },
   };

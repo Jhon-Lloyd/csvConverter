@@ -40,12 +40,22 @@ test('sorts checked-in first by check-in time, then others newest registration f
 });
 
 test('custom venue and quoted fields survive a CSV round trip', () => {
-  const { header, rows } = convert(parseCsv(LUMA), { venue: 'Online' });
+  const { header, rows } = convert(parseCsv(LUMA), { ticketColumn: { name: 'ticket_venue', value: 'Online' } });
   const csv = toCsv([header, ...rows.map((r) => r.map((v) => (typeof v === 'boolean' ? String(v).toUpperCase() : v)))]);
   const back = parseCsv(csv);
   assert.equal(back[3][0], 'Sample,');
   assert.equal(back[1][5], 'Online');
   assert.equal(back[1][4], 'TRUE');
+});
+
+test('ticket column can be renamed or left out', () => {
+  const renamed = convert(parseCsv(LUMA), { ticketColumn: { name: 'ticket_type', value: 'In-person' } });
+  assert.equal(renamed.header[5], 'ticket_type');
+  assert.equal(renamed.rows[0][5], 'In-person');
+
+  const { header, rows } = convert(parseCsv(LUMA), { ticketColumn: null });
+  assert.deepEqual(header, ['first_name', 'last_name', 'email', 'created_at', 'checked_in']);
+  assert.ok(rows.every((r) => r.length === 5));
 });
 
 test('header matching is case/space insensitive and reports missing columns', () => {

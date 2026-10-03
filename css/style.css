@@ -117,13 +117,21 @@ h3 { font-size: 16px; font-weight: 500; margin: 24px 0 8px; }
   max-width: 100%; overflow-wrap: anywhere;
 }
 
-.field { margin-top: 16px; display: flex; flex-direction: column; gap: 6px; max-width: 320px; }
+.check {
+  display: inline-flex; align-items: center; gap: 10px; margin-top: 16px;
+  font-size: 15px; cursor: pointer;
+}
+.check input { width: 18px; height: 18px; margin: 0; accent-color: var(--primary); cursor: pointer; }
+.field:has(:disabled) { opacity: .5; }
+
+.fields { display: flex; flex-wrap: wrap; gap: 12px 16px; }
+.field { flex: 1 1 200px; margin-top: 12px; display: flex; flex-direction: column; gap: 6px; max-width: 320px; }
 .field label { font-size: 14px; color: var(--text-2); font-weight: 500; }
-.field input {
+.field input, .field select {
   font: inherit; color: var(--text); background: var(--surface);
   border: 1px solid var(--outline); border-radius: 8px; padding: 10px 12px;
 }
-.field input:focus { outline: 2px solid var(--primary); outline-offset: -1px; border-color: transparent; }
+.field input:focus, .field select:focus { outline: 2px solid var(--primary); outline-offset: -1px; border-color: transparent; }
 
 .error {
   margin: 16px 0 0; padding: 12px 16px; border-radius: 12px;
